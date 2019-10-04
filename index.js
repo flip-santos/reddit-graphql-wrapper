@@ -10,6 +10,7 @@ const {
   GraphQLBoolean,
   GraphQLNonNull
 } = require('graphql')
+
 const app = express();
 const BASE_URL = 'http://api.reddit.com';
 
@@ -21,8 +22,8 @@ function fetchArticles() {
   return fetchResponseByURL('/top?limit=50').then(json => json.data.children);
 }
 
-function fetchArticleByURL(relativeURL) {
-  return fetchResponseByURL(relativeURL).then(json => json.data.children[0]);
+function fetchSubredditInfo(relativeURL) {
+  return fetchResponseByURL(relativeURL).then(json => json.data);
 }
 
 const ArticleType = new GraphQLObjectType({
@@ -60,10 +61,67 @@ const ArticleType = new GraphQLObjectType({
     visited: {
       type: GraphQLBoolean,
       resolve: article => article.data.visited
+    },
+    preview: {
+      type: PreviewType,
+      resolve: article => article.data.preview
     }
   })
 });
 
+
+const PreviewType = new GraphQLObjectType({
+  name: 'Preview',
+  description: 'Preview for a Reddit article',
+  fields: () => ({
+    images: {
+      type: GraphQLList(ImageType),
+      resolve: preview => preview.images
+    },
+    enabled: {
+      type: GraphQLBoolean,
+      resolve: preview => preview.enabled
+    }
+  })
+});
+
+const ImageType = new GraphQLObjectType({
+  name: 'Image',
+  description: 'Images for a Reddit preview',
+  fields: () => ({
+    source: {
+      type: SourceType,
+      resolve: image => image.source
+    },
+    id: {
+      type: GraphQLString,
+      resolve: image => image.id
+    },
+    resolutions: {
+      type: GraphQLList(SourceType),
+      resolve: image => image.resolutions
+    }
+  })
+});
+
+const SourceType = new GraphQLObjectType({
+  name: 'Source',
+  description: 'Source for a image in Reddit article images',
+  fields: () => ({
+    url: {
+      type: GraphQLString,
+      resolve: source => source.url
+    },
+    width: {
+      type: GraphQLString,
+      resolve: source => source.width
+    },
+    height: {
+      type: GraphQLString,
+      resolve: source => source.height
+    }
+  })  
+});  
 
 const RootQueryType = new GraphQLObjectType({
   name: 'Query',
