@@ -140,7 +140,7 @@ const RootQueryType = new GraphQLObjectType({
   name: 'Query',
   description: 'Root Query',
   fields: () => ({
-    articles: {
+    getTopArticles: {
       type: new GraphQLList(ArticleType),
       args: {
         limit: { type: GraphQLInt },
