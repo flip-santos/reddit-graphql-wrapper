@@ -147,7 +147,7 @@ const schema = new GraphQLSchema({
   query: RootQueryType
 })
 
-app.use('/graphql', expressGraphQL({
+app.use('/', expressGraphQL({
   schema: schema,
   graphiql: true
 }))
