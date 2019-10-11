@@ -1,6 +1,9 @@
+const port = process.env.PORT || 5000
 const express = require('express');
 const fetch = require('node-fetch');
 const expressGraphQL = require('express-graphql')
+const cors = require('cors');
+
 const {
   GraphQLSchema,
   GraphQLObjectType,
@@ -13,6 +16,8 @@ const {
 
 const app = express();
 const BASE_URL = 'http://api.reddit.com';
+
+app.use(cors());
 
 function fetchResponseByURL(relativeURL) {
   return fetch(`${BASE_URL}${relativeURL}`).then(res => res.json());
@@ -65,6 +70,10 @@ const ArticleType = new GraphQLObjectType({
     preview: {
       type: PreviewType,
       resolve: article => article.data.preview
+    },
+    subreddit: {
+      type: GraphQLString,
+      resolve: article => article.data.subreddit
     }
   })
 });
@@ -144,6 +153,6 @@ app.use('/graphql', expressGraphQL({
 }))
 
 app.listen(
-  5000,
+  port,
   () => console.log('GraphQL Server running at http://localhost:5000')
 );
