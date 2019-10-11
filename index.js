@@ -23,8 +23,8 @@ function fetchResponseByURL(relativeURL) {
   return fetch(`${BASE_URL}${relativeURL}`).then(res => res.json());
 }
 
-function fetchArticles() {
-  return fetchResponseByURL('/top?limit=50').then(json => json.data.children);
+function fetchArticles(limit, before, after) {
+  return fetchResponseByURL(`/top?limit=${limit}&before=${before}&after=${after}`).then(json => json.data.children);
 }
 
 function fetchSubredditInfo(relativeURL) {
@@ -38,6 +38,10 @@ const ArticleType = new GraphQLObjectType({
     id: {
       type: GraphQLString,
       resolve: article => article.data.id
+    },
+    name: {
+      type: GraphQLString,
+      resolve: article => article.data.name
     },
     permalink: {
       type: GraphQLString,
@@ -138,7 +142,14 @@ const RootQueryType = new GraphQLObjectType({
   fields: () => ({
     articles: {
       type: new GraphQLList(ArticleType),
-      resolve: fetchArticles,
+      args: {
+        limit: { type: GraphQLInt },
+        before: { type: GraphQLString },
+        after: { type: GraphQLString }
+      },
+      resolve: (root, args) => {
+        return fetchArticles(args.limit, args.before, args.after)
+      },
     }
   })
 })
@@ -154,5 +165,5 @@ app.use('/', expressGraphQL({
 
 app.listen(
   port,
-  () => console.log('GraphQL Server running at http://localhost:5000')
+  () => console.log(`GraphQL Server running at http://localhost:${port}`)
 );
