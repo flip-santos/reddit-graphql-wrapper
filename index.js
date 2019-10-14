@@ -24,12 +24,39 @@ function fetchResponseByURL(relativeURL) {
 }
 
 function fetchArticles(limit, before, after) {
-  return fetchResponseByURL(`/top?limit=${limit}&before=${before}&after=${after}`).then(json => json.data.children);
+  return fetchResponseByURL(`/top?limit=${limit}&before=${before}&after=${after}`).then(json => json.data);
 }
 
 function fetchSubredditInfo(relativeURL) {
   return fetchResponseByURL(relativeURL).then(json => json.data);
 }
+
+const ListingType = new GraphQLObjectType({
+  name: 'Listing',
+  description: 'An Reddit listing',
+  fields: () => ({
+    modhash: {
+      type: GraphQLString,
+      resolve: response => response.modhash
+    },
+    dist: {
+      type: GraphQLInt,
+      resolve: response => response.dist
+    },
+    children: {
+      type: GraphQLList(ArticleType),
+      resolve: response => response.children
+    },
+    after: {
+      type: GraphQLString,
+      resolve: response => response.after
+    },
+    before: {
+      type: GraphQLString,
+      resolve: response => response.before
+    },
+  })
+});
 
 const ArticleType = new GraphQLObjectType({
   name: 'Article',
@@ -141,7 +168,7 @@ const RootQueryType = new GraphQLObjectType({
   description: 'Root Query',
   fields: () => ({
     getTopArticles: {
-      type: new GraphQLList(ArticleType),
+      type: ListingType,
       args: {
         limit: { type: GraphQLInt },
         before: { type: GraphQLString },
